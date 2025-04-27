@@ -1,4 +1,4 @@
-import {sendEmailVerification, createUserWithEmailAndPassword } from 'firebase/auth';
+import {sendEmailVerification, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../../firebase.init';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -12,8 +12,11 @@ const SignUp = () => {
 
     const handleSignUp = e => {
         e.preventDefault();
+
         const email = e.target.email.value
         const password = e.target.password.value
+        const name = e.target.name.value
+        const photo = e.target.photo.value
         const terms = e.target.terms.checked
         console.log(email, password,terms)
         
@@ -38,12 +41,26 @@ const SignUp = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(res => {
                 console.log(res)
-                
+                //email verify
                 sendEmailVerification(auth.currentUser)
                 .then(()=>{
                     setSuccess(true)
                     alert('we sent you a verication code.please check your email')
                 })
+                    //update user profile
+
+                    const profile={
+                        displayName:name,
+                        photoURL:photo
+                    }
+                    updateProfile(auth.currentUser,profile)
+                    .then(()=>{
+                        console.log('user profile updated')
+                    })
+                    .catch(error=>{
+                        console.log(error)
+                    })
+            
                 
             })
             .catch(error => {
@@ -58,6 +75,10 @@ const SignUp = () => {
             <div className="card-body">
                 <h1 className="text-3xl font-bold">Please sign up now!!</h1>
                 <form onSubmit={handleSignUp} className='space-y-4'>
+                    <label className="label">Your name</label>
+                    <input type="text" className="input" name='name' placeholder="Your name" />
+                    <label className="label">Your photo</label>
+                    <input type="text" className="input" name='photo' placeholder="photo url" />
                     <label className="label">Email</label>
                     <input type="email" className="input" name='email' placeholder="Email" />
                     <label className="label">Password</label>
@@ -76,7 +97,7 @@ const SignUp = () => {
                             }
                         </button>
                     </div>
-                    <div><a className="link link-hover">Forgot password?</a></div>
+                    
                     <label className="labelm-2">
                         <input type="checkbox" name='terms'  className="checkbox" />
                         Accept terms and conditions
